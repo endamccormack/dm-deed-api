@@ -1,7 +1,8 @@
 from application.deed.model import Deed
 from application.deed.utils import validate_helper, valid_dob, is_unique_list
-from flask import request, abort
+from flask import request
 from flask import Blueprint
+from flask.ext.api.exceptions import ParseError, NotFound, APIException
 from flask.ext.api import status
 import json
 from application.borrower.server import BorrowerService
@@ -18,7 +19,7 @@ def get_deed(deed_reference):
     result = Deed.query.filter_by(token=str(deed_reference)).first()
 
     if result is None:
-        abort(status.HTTP_404_NOT_FOUND)
+        raise NotFound(status.HTTP_404_NOT_FOUND)
     else:
         result.deed['token'] = result.token
 
@@ -34,7 +35,7 @@ def create():
     error_count, error_message = validate_helper(deed_json)
 
     if error_count > 0:
-        return error_message, status.HTTP_400_BAD_REQUEST
+        raise ParseError(error_message)
     else:
         deed.deed = deed_json
 
@@ -51,14 +52,14 @@ def create():
             .reduce(valid_dob, True).value()
 
         if not valid_dob_result:
-            abort(status.HTTP_400_BAD_REQUEST)
+            raise ParseError("Invalid Date of Birth")
 
         phone_number_list = _(deed_json['borrowers']).chain()\
             .map(lambda x, *a: x['phone_number'])\
             .value()
 
         if not is_unique_list(phone_number_list):
-            abort(status.HTTP_400_BAD_REQUEST)
+            raise ParseError("Phone Number is not unique")
 
         try:
             for borrower in deed_json['borrowers']:
@@ -80,8 +81,7 @@ def create():
             url = request.base_url + str(deed.token)
             return url, status.HTTP_201_CREATED
         except Exception as e:
-            print("Database Exception - %s" % e)
-            abort(status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise APIException("Database Exception - %s" % e)
 
 
 @deed_bp.route('/borrowers/delete/<borrower_id>', methods=['DELETE'])
@@ -94,6 +94,6 @@ def delete_borrower(borrower_id):
         print(str(type(inst)) + ":" + str(inst))
 
     if borrower is None:
-        abort(status.HTTP_404_NOT_FOUND)
+        raise NotFound(status.HTTP_404_NOT_FOUND)
     else:
         return json.dumps({'id': borrower_id}), status.HTTP_200_OK
