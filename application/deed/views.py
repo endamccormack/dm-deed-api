@@ -97,3 +97,29 @@ def delete_borrower(borrower_id):
         abort(status.HTTP_404_NOT_FOUND)
     else:
         return json.dumps({'id': borrower_id}), status.HTTP_200_OK
+
+
+@deed_bp.route('/update/<deed_reference>', methods=['POST'])
+def get_existing_deed_and_update(deed_reference):
+
+    # Firstly check payload coming in is valid:
+    new_deed_json = request.get_json()
+
+    error_count, error_message = validate_helper(new_deed_json)
+
+    if error_count > 0:
+        return error_message, status.HTTP_400_BAD_REQUEST
+    else:
+        # If Valid:
+        # Get Current Deed
+        result = Deed.query.filter_by(token=str(deed_reference)).first()
+
+    if result is None:
+        abort(status.HTTP_404_NOT_FOUND)
+    else:
+        # And Replace? (New Code goes here)
+        result.deed['token'] = result.token
+
+    # Return updated Deed - assuming same token?
+    result = Deed.query.filter_by(token=str(deed_reference)).first()
+    return json.dumps({"deed": result.deed}), status.HTTP_200_OK
