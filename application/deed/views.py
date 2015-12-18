@@ -118,7 +118,11 @@ def get_existing_deed_and_update(deed_reference):
         abort(status.HTTP_404_NOT_FOUND)
     else:
         # And Replace? (New Code goes here)
+        # Set token to current token (not generate)
         result.deed['token'] = result.token
+        # Make a deed out of new information
+
+        # Save the Deed
 
     # Return updated Deed - assuming same token?
     result = Deed.query.filter_by(token=str(deed_reference)).first()
