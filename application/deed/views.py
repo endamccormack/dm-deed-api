@@ -99,7 +99,7 @@ def delete_borrower(borrower_id):
         return json.dumps({'id': borrower_id}), status.HTTP_200_OK
 
 
-@deed_bp.route('/update/<deed_reference>', methods=['POST'])
+@deed_bp.route('/', methods=['PUT'])
 def get_existing_deed_and_update(deed_reference):
 
     # Firstly check payload coming in is valid:
