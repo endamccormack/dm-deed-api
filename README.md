@@ -74,7 +74,7 @@ The Deed requires a title number and at least 1 borrower
 ### Deed
 The schema can be found below
 ```
-https://github.com/LandRegistry/dm-deed-api/blob/develop/application/deed/schema.json
+https://github.com/LandRegistry/dm-deed-api/blob/develop/application/deed/deed-api.json
 ```
 Example payload:
 ```
